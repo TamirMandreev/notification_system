@@ -12,8 +12,14 @@ djangorestframework = "^3.16.1"
 python-dotenv = "^1.1.1"
 psycopg2-binary = "^2.9.10"
 pytest = "^8.4.2"
+pytest-django = "^4.11.1"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+python_files = ["test_*.py",]
+addopts = "-p no:django_tests"
