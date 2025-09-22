@@ -13,6 +13,7 @@ python-dotenv = "^1.1.1"
 psycopg2-binary = "^2.9.10"
 pytest = "^8.4.2"
 pytest-django = "^4.11.1"
+ipython = "^9.5.0"
 
 
 [build-system]
