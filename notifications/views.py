@@ -11,11 +11,12 @@ class NotificationCreateAPIView(CreateAPIView):
     serializer_class = NotificationSerializer
 
     def perform_create(self, serializer):
-        notification = serializer.save()
+        serializer.save()
 
-        recipient_list = get_recipient_list(serializer.validated_data['users'])
         subject = serializer.validated_data['subject']
         message = serializer.validated_data['message']
+        recipient_list = get_recipient_list(serializer.validated_data['users'])
 
         send_async_email.delay(subject, message, settings.EMAIL_HOST_USER, recipient_list,)
+
 
