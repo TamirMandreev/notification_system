@@ -20,7 +20,9 @@ class NotificationCreateAPIView(CreateAPIView):
         # Создать пользователей
         create_users(serializer.validated_data['users'])
         # Отправить каждому пользователю письмо
-        send_users_email(subject, message)
+        send_async_email.delay(subject, message)
+        # Отправить пользователям смс
+
 
 
 

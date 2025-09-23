@@ -15,7 +15,7 @@ class TestSendAsyncEmail:
         Тестирует успешность отправки сообщения
         :return:
         '''
-        send_async_email('Test subject', 'Test message', 'tamirmandreev@mail.ru', ['tamirmandreev@mail.ru', 'mandreevts@gmail.com'])
+        send_async_email('Test subject', 'Test message')
         assert len(mail.outbox) == 1
         assert mail.outbox[0].subject == 'Test subject'
         assert mail.outbox[0].to == ['tamirmandreev@mail.ru', 'mandreevts@gmail.com']
