@@ -2,7 +2,7 @@ from rest_framework.generics import CreateAPIView
 from django.conf import settings
 
 from notifications.serializers import NotificationSerializer
-from notifications.services import create_users
+from notifications.services import create_users, send_users_email
 from notifications.models import User
 
 from notifications.tasks import send_async_email
@@ -20,7 +20,7 @@ class NotificationCreateAPIView(CreateAPIView):
         # Создать пользователей
         create_users(serializer.validated_data['users'])
         # Отправить каждому пользователю письмо
-        users = User.objects.all()
-        for user in users:
-            send_async_email.delay(subject, message, user.id, user.email)
+        send_users_email(subject, message)
+
+
 
