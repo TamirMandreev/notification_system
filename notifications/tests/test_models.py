@@ -11,7 +11,7 @@ def notification():
             ['Тимур', 'mandreevts@gmail.com', '+79644111469',]
         ],
         subject='Тестовое письмо',
-        body='Проводится тестирование создания объекта модели Notification'
+        message='Проводится тестирование создания объекта модели Notification'
     )
 
 @pytest.mark.django_db
@@ -24,4 +24,4 @@ def test_notification_creation(notification):
             ['Тимур', 'mandreevts@gmail.com', '+79644111469',]
         ]
     assert notification.subject == 'Тестовое письмо'
-    assert notification.body == 'Проводится тестирование создания объекта модели Notification'
+    assert notification.message == 'Проводится тестирование создания объекта модели Notification'
