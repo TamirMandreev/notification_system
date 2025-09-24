@@ -140,3 +140,8 @@ EMAIL_USE_TLS = True
 EMAIL_USER_SSL = False
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+
+
+# Настройки SmsAero для отправки смс-сообщений
+SMSAERO_EMAIL = os.getenv('SMSAERO_EMAIL')
+SMSAERO_API_KEY = os.getenv('SMSAERO_API_KEY')

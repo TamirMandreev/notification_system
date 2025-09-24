@@ -1,6 +1,7 @@
 from django.core.mail import send_mail
 
 from celery import shared_task
+from smsaero import SmsAero, SmsAeroException
 
 from config import settings
 from notifications.models import EmailSendStatus, User
@@ -9,7 +10,7 @@ from notifications.models import EmailSendStatus, User
 @shared_task
 def send_async_email(subject: str, message: str):
     '''
-    Асинхронно отправляет всем пользователям сообщение по эл. почте через SMTP-сервер
+    Отправляет всем пользователям сообщение по эл. почте через SMTP-сервер
 
     Параметры:
     subject (str): Тема письма
@@ -33,3 +34,18 @@ def send_async_email(subject: str, message: str):
             EmailSendStatus.objects.create(user=user, is_successful=False, error_message=str(e))
 
 
+@shared_task
+def send_sms(phone: int, message: str) -> dict:
+    '''
+    Отправляет смс-сообщения
+
+    Параметры:
+    phone (int): Номер телефона в формате +79915410704, на который будет отправлено смс-сообщение
+    message (str): Содержание отправляемого смс-сообщения
+
+    Возвращает:
+    dict: Словарь, содержащий ответ от API SmsAero
+    '''
+
+    api = SmsAero(settings.SMSAERO_EMAIL, settings.SMSAERO_API_KEY)
+    return api.send_sms(phone, message)
