@@ -145,3 +145,8 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 # Настройки SmsAero для отправки смс-сообщений
 SMSAERO_EMAIL = os.getenv('SMSAERO_EMAIL')
 SMSAERO_API_KEY = os.getenv('SMSAERO_API_KEY')
+
+
+# Настройки Telegram
+TELEGRAM_URL = 'https://api.telegram.org/bot'
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')

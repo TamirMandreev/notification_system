@@ -1,13 +1,15 @@
 from django.core.mail import send_mail
 
+import requests
+
 from celery import shared_task
 from smsaero import SmsAero, SmsAeroException
 
 from config import settings
-from notifications.models import EmailSendStatus, User
+from notifications.models import EmailSendStatus, User, TelegramSendStatus
 
 
-@shared_task
+
 def send_async_email(subject: str, message: str):
     '''
     Отправляет всем пользователям сообщение по эл. почте через SMTP-сервер
@@ -32,6 +34,37 @@ def send_async_email(subject: str, message: str):
 
         except Exception as e:
             EmailSendStatus.objects.create(user=user, is_successful=False, error_message=str(e))
+
+
+
+def send_telegram_message(subject: str, message: str):
+    '''
+    Отправляет сообщение в Telegram
+
+    Параметры:
+    subject (str): Тема письма
+    message (str): Текст письма
+    '''
+
+    full_message = f'Тема: {subject} \n\nСообщение: {message}'
+    emails_send_status_false = EmailSendStatus.objects.filter(is_successful=False)
+
+    for emails_status in emails_send_status_false:
+        params = {
+            'text': full_message,
+            'chat_id': emails_status.user.tg_chat_id,
+        }
+        response = requests.get(f'{settings.TELEGRAM_URL}{settings.TELEGRAM_TOKEN}/sendMessage', params=params)
+        if response.status_code == 200:
+            TelegramSendStatus.objects.create(user=emails_status.user, is_successful=True)
+        else:
+            TelegramSendStatus.objects.create(user=emails_status.user, is_successful=False)
+
+
+
+
+
+
 
 
 @shared_task
