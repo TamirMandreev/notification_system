@@ -7,12 +7,13 @@ from notifications.models import EmailSendStatus, User
 
 
 @shared_task
-def send_async_email(subject, message):
+def send_async_email(subject: str, message: str):
     '''
-    Асинхронно отправляет эл. сообщение через SMTP-сервер всем пользователям
-    :param subject: тема письма
-    :param message: текст письма
-    :return:
+    Асинхронно отправляет всем пользователям сообщение по эл. почте через SMTP-сервер
+
+    Параметры:
+    subject (str): Тема письма
+    message (str): Текст письма
     '''
     users = User.objects.all()
     for user in users:
@@ -30,3 +31,5 @@ def send_async_email(subject, message):
 
         except Exception as e:
             EmailSendStatus.objects.create(user=user, is_successful=False, error_message=str(e))
+
+
