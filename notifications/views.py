@@ -22,9 +22,9 @@ class NotificationCreateAPIView(CreateAPIView):
         create_users(serializer.validated_data['users'])
 
         # Отправить каждому пользователю письмо на эл. почту
-        send_async_email.delay(subject, message)
+        send_async_email(subject, message)
         # Кому не получилось отправить на эл. почту, отправить в Telegram
-        send_telegram_message.delay(subject, message)
+        send_telegram_message(subject, message)
         # Отправить пользователям смс
 
 
