@@ -1,10 +1,7 @@
 from rest_framework.generics import CreateAPIView
-from django.conf import settings
-from celery import chain
 
 from notifications.serializers import NotificationSerializer
-from notifications.services import create_users
-from notifications.models import User
+from notifications.services import create_users, send_sms_message
 
 from notifications.services import send_async_email, send_telegram_message
 
@@ -25,7 +22,8 @@ class NotificationCreateAPIView(CreateAPIView):
         send_async_email(subject, message)
         # Кому не получилось отправить на эл. почту, отправить в Telegram
         send_telegram_message(subject, message)
-        # Отправить пользователям смс
+        # Кому не получилось отправить в Telegram, отправить смс
+        send_sms_message(message)
 
 
 

@@ -6,9 +6,7 @@ from celery import shared_task
 from smsaero import SmsAero, SmsAeroException
 
 from config import settings
-from notifications.models import EmailSendStatus, User, TelegramSendStatus
-
-
+from notifications.models import EmailSendStatus, User, TelegramSendStatus, SmsSendStatus
 
 from notifications.models import User
 
@@ -66,17 +64,10 @@ def send_telegram_message(subject: str, message: str):
         if response.status_code == 200:
             TelegramSendStatus.objects.create(user=emails_status.user, is_successful=True)
         else:
-            TelegramSendStatus.objects.create(user=emails_status.user, is_successful=False)
+            TelegramSendStatus.objects.create(user=emails_status.user, is_successful=False, error_message=response.status_code)
 
 
-
-
-
-
-
-
-@shared_task
-def send_sms(phone: int, message: str) -> dict:
+def send_sms_message(message: str) -> dict:
     '''
     Отправляет смс-сообщения
 
@@ -87,6 +78,13 @@ def send_sms(phone: int, message: str) -> dict:
     Возвращает:
     dict: Словарь, содержащий ответ от API SmsAero
     '''
-
     api = SmsAero(settings.SMSAERO_EMAIL, settings.SMSAERO_API_KEY)
-    return api.send_sms(phone, message)
+    telegram_send_status_false = TelegramSendStatus.objects.filter(is_successful=False)
+    for telegram_status in telegram_send_status_false:
+        try:
+            phone = int(telegram_status.user.number)
+            api.send_sms(phone, message)
+            SmsSendStatus.objects.create(user=telegram_status.user, is_successful=True)
+        except SmsAeroException as e:
+            SmsSendStatus.objects.create(user=telegram_status.user, is_successful=False, error_message=e)
+
