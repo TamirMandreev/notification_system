@@ -2,7 +2,6 @@ from django.core.mail import send_mail
 
 import requests
 
-from celery import shared_task
 from smsaero import SmsAero, SmsAeroException
 
 from config import settings
@@ -16,7 +15,7 @@ def create_users(users):
         User.objects.create(name=user[0], email=user[1], number=user[2], tg_chat_id=user[3])
 
 
-def send_async_email(subject: str, message: str):
+def send_email_message(subject: str, message: str):
     '''
     Отправляет всем пользователям сообщение по эл. почте через SMTP-сервер
 

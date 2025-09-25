@@ -3,7 +3,7 @@ import pytest
 from notifications.models import User
 from notifications.services import create_users
 from notifications.models import User
-from notifications.services import send_async_email
+from notifications.services import send_email_message
 
 
 
@@ -32,9 +32,9 @@ def test_create_users():
     assert timur_user.number == '+79644111469'
 
 
-class TestSendAsyncEmail:
+class TestSendEmailMessage:
     '''
-    Тестирует функцию send_async_email
+    Тестирует функцию send_email_message
     '''
 
     @pytest.fixture
@@ -48,7 +48,7 @@ class TestSendAsyncEmail:
         Тестирует успешность отправки сообщения
         :return:
         '''
-        send_async_email('Test subject', 'Test message')
+        send_email_message('Test subject', 'Test message')
         assert len(mail.outbox) == 2
         assert mail.outbox[0].subject == 'Test subject'
         assert mail.outbox[0].to == ['tamirmandreev@mail.ru']
@@ -65,4 +65,4 @@ class TestSendAsyncEmail:
         :return:
         '''
         with pytest.raises(Exception):
-            send_async_email('', '', [])
+            send_email_message('', '', [])
