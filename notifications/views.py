@@ -6,7 +6,7 @@ from notifications.serializers import NotificationSerializer
 from notifications.services import create_users
 from notifications.models import User
 
-from notifications.tasks import send_async_email, send_telegram_message
+from notifications.services import send_async_email, send_telegram_message
 
 
 class NotificationCreateAPIView(CreateAPIView):

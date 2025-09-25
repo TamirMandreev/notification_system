@@ -2,13 +2,18 @@ import pytest
 
 from notifications.models import User
 from notifications.services import create_users
+from notifications.models import User
+from notifications.services import send_async_email
 
+
+
+from django.core import mail
 
 @pytest.mark.django_db
 def test_create_users():
     data = [
-        ['Тамир', 'tamirmandreev@mail.ru', '89915410704'],
-        ['Тимур', 'mandreevts@gmail.com', '+79644111469'],
+        ['Тамир', 'tamirmandreev@mail.ru', '89915410704', '747451276'],
+        ['Тимур', 'mandreevts@gmail.com', '+79644111469', '747451276'],
     ]
 
     assert User.objects.all().count() == 0
@@ -25,3 +30,39 @@ def test_create_users():
     assert timur_user.name == 'Тимур'
     assert timur_user.email == 'mandreevts@gmail.com'
     assert timur_user.number == '+79644111469'
+
+
+class TestSendAsyncEmail:
+    '''
+    Тестирует функцию send_async_email
+    '''
+
+    @pytest.fixture
+    def users(self):
+        user_1 = User.objects.create(name='Tamir', email='tamirmandreev@mail.ru', number='+79915410704', tg_chat_id='747451276')
+        user_2 = User.objects.create(name='Timur', email='mandreevts@gmail.com', number='+79644111469', tg_chat_id='747451276')
+
+    @pytest.mark.django_db
+    def test_send_async_email_success(self, users):
+        '''
+        Тестирует успешность отправки сообщения
+        :return:
+        '''
+        send_async_email('Test subject', 'Test message')
+        assert len(mail.outbox) == 2
+        assert mail.outbox[0].subject == 'Test subject'
+        assert mail.outbox[0].to == ['tamirmandreev@mail.ru']
+        assert mail.outbox[0].body == 'Test message'
+        assert mail.outbox[0].from_email == 'tamirmandreev@mail.ru'
+        assert mail.outbox[1].subject == 'Test subject'
+        assert mail.outbox[1].to == ['mandreevts@gmail.com']
+        assert mail.outbox[1].body == 'Test message'
+        assert mail.outbox[1].from_email == 'tamirmandreev@mail.ru'
+
+    def test_send_async_email_failure(self):
+        '''
+        Тестирует обработку ошибок
+        :return:
+        '''
+        with pytest.raises(Exception):
+            send_async_email('', '', [])
