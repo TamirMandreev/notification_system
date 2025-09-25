@@ -43,7 +43,7 @@ class TestSendEmailMessage:
         user_2 = User.objects.create(name='Timur', email='mandreevts@gmail.com', number='+79644111469', tg_chat_id='747451276')
 
     @pytest.mark.django_db
-    def test_send_async_email_success(self, users):
+    def test_send_email_message(self, users):
         '''
         Тестирует успешность отправки сообщения
         :return:
@@ -59,7 +59,7 @@ class TestSendEmailMessage:
         assert mail.outbox[1].body == 'Test message'
         assert mail.outbox[1].from_email == 'tamirmandreev@mail.ru'
 
-    def test_send_async_email_failure(self):
+    def test_send_email_message_failure(self):
         '''
         Тестирует обработку ошибок
         :return:
