@@ -91,7 +91,7 @@ def send_sms_message(message: str) -> dict:
             SmsSendStatus.objects.create(user=telegram_status.user, is_successful=False, error_message=e)
 
 
-def generate_notification_report():
+def generate_notification_report(output_file=False):
     '''
     Генерирует текстовый отчет по всем отправкам
     :return:

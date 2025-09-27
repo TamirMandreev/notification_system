@@ -1,12 +1,14 @@
+import os
 import unittest
 
 import pytest
 
 from unittest.mock import patch, MagicMock
 from django.conf import settings
+from django.utils import timezone
 
-from notifications.services import create_users
-from notifications.models import User, EmailSendStatus, TelegramSendStatus
+from notifications.services import create_users, generate_notification_report
+from notifications.models import User, EmailSendStatus, TelegramSendStatus, SmsSendStatus
 from notifications.services import send_email_message, send_telegram_message, send_sms_message
 
 from django.core import mail
@@ -41,7 +43,12 @@ def users():
                                 tg_chat_id='747451276')
     user2 = User.objects.create(name='Timur', email='mandreevts@gmail.com', number='+79644111469',
                                 tg_chat_id='747451276')
-    return user1, user2
+    user3 = User.objects.create(name='Alexandr', email='alexandr@gmail.com', number='+79644111469',
+                                tg_chat_id='747451276')
+    user4 = User.objects.create(name='Ivan', email='ivan@gmail.com', number='+79644111469',
+                                tg_chat_id='747451276')
+
+    return user1, user2, user3, user4
 
 
 class TestSendEmailMessage:
@@ -56,7 +63,7 @@ class TestSendEmailMessage:
         :return:
         '''
         send_email_message('Test subject', 'Test message')
-        assert len(mail.outbox) == 2
+        assert len(mail.outbox) == 4
         assert mail.outbox[0].subject == 'Test subject'
         assert mail.outbox[0].to == ['tamirmandreev@mail.ru']
         assert mail.outbox[0].body == 'Test message'
@@ -158,5 +165,42 @@ class TestSendSmsMessage:
         assert calls[1][0] == (79644111469, 'Test message')
 
 
-def TestGenerateNotificationReport():
-    pass
+class TestGenerateNotificationReport:
+
+    @pytest.fixture
+    def objects(self, users):
+        EmailSendStatus.objects.create(user=users[0], is_successful=True)
+        EmailSendStatus.objects.create(user=users[1], is_successful=False, error_message='Тестовая ошибка 1')
+        EmailSendStatus.objects.create(user=users[2], is_successful=False, error_message='Тестовая ошибка 2')
+        EmailSendStatus.objects.create(user=users[3], is_successful=False, error_message='Тестовая ошибка 3')
+        TelegramSendStatus.objects.create(user=users[1], is_successful=True)
+        TelegramSendStatus.objects.create(user=users[2], is_successful=False, error_message='Тестовая ошибка 4')
+        TelegramSendStatus.objects.create(user=users[3], is_successful=False, error_message='Тестовая ошибка 5')
+        SmsSendStatus.objects.create(user=users[2], is_successful=True)
+        SmsSendStatus.objects.create(user=users[3], is_successful=False, error_message='Тестовая ошибка 6')
+
+    @pytest.mark.django_db
+    def test_generate_notification_report(self, objects):
+        generate_notification_report()
+
+        expected_output = '''ОТЧЕТ ПО ОТПРАВКЕ УВЕДОМЛЕНИЙ
+==================================================
+
+ЭЛЕКТРОННАЯ ПОЧТА:
+	Всего отправок: 4
+	Успешных: 1
+	Неудачных: 3
+TELEGRAM:
+	Всего отправок: 3
+	Успешных: 1
+	Неудачных: 2
+SMS:
+	Всего отправок: 2
+	Успешных: 1
+	Неудачных: 1'''
+        timestamp = timezone.now().strftime('%d.%m.%Y %H:%M')
+        file_name = f'{timestamp}.txt'
+        file_path = os.path.join(settings.MEDIA_ROOT, 'reports', file_name)
+        with open(file_path, 'r') as f:
+            assert expected_output in f.read()
+
