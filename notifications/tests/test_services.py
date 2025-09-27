@@ -36,16 +36,20 @@ def test_create_users():
     assert timur_user.email == 'mandreevts@gmail.com'
     assert timur_user.number == '+79644111469'
 
+@pytest.fixture
+def users():
+    user1 = User.objects.create(name='Tamir', email='tamirmandreev@mail.ru', number='+79915410704',
+                                 tg_chat_id='747451276')
+    user2 = User.objects.create(name='Timur', email='mandreevts@gmail.com', number='+79644111469',
+                                 tg_chat_id='747451276')
+    return user1, user2
+
 
 class TestSendEmailMessage:
     '''
     Тестирует функцию send_email_message
     '''
 
-    @pytest.fixture
-    def users(self):
-        user_1 = User.objects.create(name='Tamir', email='tamirmandreev@mail.ru', number='+79915410704', tg_chat_id='747451276')
-        user_2 = User.objects.create(name='Timur', email='mandreevts@gmail.com', number='+79644111469', tg_chat_id='747451276')
 
     @pytest.mark.django_db
     def test_send_email_message(self, users):
@@ -76,15 +80,13 @@ class TestSendEmailMessage:
 class TestSendTelegramMessage:
 
     @pytest.fixture
-    def failed_email_statuses(self):
+    def failed_email_statuses(self, users):
         '''
         Создает объекты, хранящие информацию о пользователях, которым не удалось отправить email-сообщение
         '''
 
-        user1 = User.objects.create(name='Tamir', email='tamirmandreev@mail.ru', number='+79915410704', tg_chat_id='747451276')
-        user2 = User.objects.create(name='Timur', email='mandreevts@gmail.com', number='+79915410704', tg_chat_id='747451276')
-        failed_email_statuse1= EmailSendStatus.objects.create(user=user1, is_successful=False)
-        failed_email_statuses2= EmailSendStatus.objects.create(user=user2, is_successful=False)
+        failed_email_statuse1= EmailSendStatus.objects.create(user=users[0], is_successful=False)
+        failed_email_statuses2= EmailSendStatus.objects.create(user=users[1], is_successful=False)
 
     @pytest.fixture
     def mock_requests(self):
@@ -127,14 +129,13 @@ class TestSendTelegramMessage:
 class TestSendSmsMessage:
 
     @pytest.fixture
-    def failed_telegram_statuses(self):
+    def failed_telegram_statuses(self, users):
         '''
         Создает объекты, хранящие информацию о пользователях, которым не удалось отправить email-сообщение
         '''
-        user1 = User.objects.create(name='Tamir', email='tamirmandreev@mail.ru', number='+79915410704', tg_chat_id='747451276')
-        user2 = User.objects.create(name='Timur', email='mandreevts@gmail.com', number='+79915410704', tg_chat_id='747451276')
-        failed_telegram_statuse1 = TelegramSendStatus.objects.create(user=user1, is_successful=False)
-        failed_telegram_statuses2 = TelegramSendStatus.objects.create(user=user2, is_successful=False)
+
+        failed_telegram_statuse1 = TelegramSendStatus.objects.create(user=users[0], is_successful=False)
+        failed_telegram_statuses2 = TelegramSendStatus.objects.create(user=users[1], is_successful=False)
 
     @pytest.fixture
     def mock_sms_aero(self):
@@ -155,8 +156,11 @@ class TestSendSmsMessage:
 
         calls = mock_api.send_sms.call_args_list
         assert calls[0][0] == (79915410704, 'Test message')
-        assert calls[1][0] == (79915410704, 'Test message')
+        assert calls[1][0] == (79644111469, 'Test message')
 
+
+def TestGenerateNotificationReport():
+    pass
 
 
 
