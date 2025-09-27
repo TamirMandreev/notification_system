@@ -14,6 +14,18 @@ from notifications.models import User
 
 
 def create_users(users):
+    '''
+    Создает пользователей (объекты модели User)
+
+    Параметры:
+    users (nested list): Список пользователей в формате "users":
+    [
+        ["Тамир", "tamirmandreev@mail.ru", "+79915410704", "747451276"],
+        ["Тимур", "mandreevgmail.com", "+79644111469", "747451276"],
+        ["Александр", "alexandrgmail.com", "+79915410704", ""]
+    ]
+
+    '''
     for user in users:
         User.objects.create(name=user[0], email=user[1], number=user[2], tg_chat_id=user[3])
 
@@ -47,7 +59,7 @@ def send_email_message(subject: str, message: str):
 
 def send_telegram_message(subject: str, message: str):
     '''
-    Отправляет сообщение в Telegram
+    Отправляет сообщение в Telegram пользователям, которым не удалось отправить сообщение на email
 
     Параметры:
     subject (str): Тема письма
@@ -71,14 +83,11 @@ def send_telegram_message(subject: str, message: str):
 
 def send_sms_message(message: str) -> dict:
     '''
-    Отправляет смс-сообщения
+    Отправляет смс-сообщения пользователям, которым не удалось отправить сообщение в Telegram
 
     Параметры:
     phone (int): Номер телефона в формате +79915410704, на который будет отправлено смс-сообщение
     message (str): Содержание отправляемого смс-сообщения
-
-    Возвращает:
-    dict: Словарь, содержащий ответ от API SmsAero
     '''
     api = SmsAero(settings.SMSAERO_EMAIL, settings.SMSAERO_API_KEY)
     telegram_send_status_false = TelegramSendStatus.objects.filter(is_successful=False)
@@ -91,10 +100,9 @@ def send_sms_message(message: str) -> dict:
             SmsSendStatus.objects.create(user=telegram_status.user, is_successful=False, error_message=e)
 
 
-def generate_notification_report(output_file=False):
+def generate_notification_report():
     '''
-    Генерирует текстовый отчет по всем отправкам
-    :return:
+    Генерирует текстовый отчет по всем отправленным сообщениям
     '''
 
     timestamp = timezone.now().strftime('%d.%m.%Y %H:%M')
