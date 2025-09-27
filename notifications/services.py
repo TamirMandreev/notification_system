@@ -4,8 +4,8 @@ import requests
 
 from smsaero import SmsAero, SmsAeroException
 
-from config import settings
-from notifications.models import EmailSendStatus, User, TelegramSendStatus, SmsSendStatus
+from django.conf import settings
+from notifications.models import EmailSendStatus, TelegramSendStatus, SmsSendStatus
 
 from notifications.models import User
 

@@ -8,7 +8,7 @@ from django.conf import settings
 
 from notifications.services import create_users
 from notifications.models import User, EmailSendStatus, TelegramSendStatus
-from notifications.services import send_email_message, send_telegram_message
+from notifications.services import send_email_message, send_telegram_message, send_sms_message
 
 
 
@@ -88,8 +88,8 @@ class TestSendTelegramMessage:
 
     @pytest.fixture
     def mock_requests(self):
-        with patch('notifications.services.requests.get') as mock_get:
-            yield mock_get
+        with patch('notifications.services.requests.get') as mock_request_get:
+            yield mock_request_get
 
     @pytest.mark.django_db
     def test_successful_telegram_send(self, mock_requests, failed_email_statuses):
@@ -122,6 +122,45 @@ class TestSendTelegramMessage:
                 })
         ]
         mock_requests.assert_has_calls(expected_calls, any_order=True)
+
+
+class TestSendSmsMessage:
+
+    @pytest.fixture
+    def failed_telegram_statuses(self):
+        '''
+        Создает объекты, хранящие информацию о пользователях, которым не удалось отправить email-сообщение
+        '''
+        user1 = User.objects.create(name='Tamir', email='tamirmandreev@mail.ru', number='+79915410704', tg_chat_id='747451276')
+        user2 = User.objects.create(name='Timur', email='mandreevts@gmail.com', number='+79915410704', tg_chat_id='747451276')
+        failed_telegram_statuse1 = TelegramSendStatus.objects.create(user=user1, is_successful=False)
+        failed_telegram_statuses2 = TelegramSendStatus.objects.create(user=user2, is_successful=False)
+
+    @pytest.fixture
+    def mock_sms_aero(self):
+        with patch('notifications.services.SmsAero') as mock_sms:
+            yield mock_sms
+
+    @pytest.mark.django_db
+    def test_successful_sms_send(self, mock_sms_aero, failed_telegram_statuses):
+        mock_api = MagicMock()
+        mock_api.send_sms.return_value = {"success", True}
+        mock_sms_aero.return_value = mock_api
+
+        send_sms_message('Test message')
+
+        mock_sms_aero.assert_called_once_with(settings.SMSAERO_EMAIL, settings.SMSAERO_API_KEY)
+
+        assert mock_api.send_sms.call_count == 2
+
+        calls = mock_api.send_sms.call_args_list
+        assert calls[0][0] == (79915410704, 'Test message')
+        assert calls[1][0] == (79915410704, 'Test message')
+
+
+
+
+
 
 
 
