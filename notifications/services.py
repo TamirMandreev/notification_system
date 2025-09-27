@@ -52,9 +52,9 @@ def send_telegram_message(subject: str, message: str):
     '''
 
     full_message = f'Тема: {subject} \n\nСообщение: {message}'
-    emails_send_status_false = EmailSendStatus.objects.filter(is_successful=False)
+    failed_email_statuses = EmailSendStatus.objects.filter(is_successful=False)
 
-    for emails_status in emails_send_status_false:
+    for emails_status in failed_email_statuses:
         params = {
             'text': full_message,
             'chat_id': emails_status.user.tg_chat_id,

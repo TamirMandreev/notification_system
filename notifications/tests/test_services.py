@@ -1,9 +1,14 @@
+import unittest
+
 import pytest
 
-from notifications.models import User
+from unittest.mock import patch, MagicMock
+from django.conf import settings
+
+
 from notifications.services import create_users
-from notifications.models import User
-from notifications.services import send_email_message
+from notifications.models import User, EmailSendStatus, TelegramSendStatus
+from notifications.services import send_email_message, send_telegram_message
 
 
 
@@ -66,3 +71,60 @@ class TestSendEmailMessage:
         '''
         with pytest.raises(Exception):
             send_email_message('', '', [])
+
+
+class TestSendTelegramMessage:
+
+    @pytest.fixture
+    def failed_email_statuses(self):
+        '''
+        Создает объекты, хранящие информацию о пользователях, которым не удалось отправить email-сообщение
+        '''
+
+        user1 = User.objects.create(name='Tamir', email='tamirmandreev@mail.ru', number='+79915410704', tg_chat_id='747451276')
+        user2 = User.objects.create(name='Timur', email='mandreevts@gmail.com', number='+79915410704', tg_chat_id='747451276')
+        failed_email_statuse1= EmailSendStatus.objects.create(user=user1, is_successful=False)
+        failed_email_statuses2= EmailSendStatus.objects.create(user=user2, is_successful=False)
+
+    @pytest.fixture
+    def mock_requests(self):
+        with patch('notifications.services.requests.get') as mock_get:
+            yield mock_get
+
+    @pytest.mark.django_db
+    def test_successful_telegram_send(self, mock_requests, failed_email_statuses):
+        '''
+        Тест успешной отправки уведомления в Telegram
+        :param mock_requests:
+        :param emails_send_status_false:
+        :return:
+        '''
+
+        # Мок успешного ответа от Telegram API
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_requests.return_value = mock_response
+
+        send_telegram_message('Test subject', 'Test message')
+
+        expected_calls = [
+            unittest.mock.call(
+                f'{settings.TELEGRAM_URL}{settings.TELEGRAM_TOKEN}/sendMessage',
+                params={
+                    'text':'Тема: Test subject \n\nСообщение: Test message',
+                    'chat_id': '747451276'
+                }
+            ),
+            unittest.mock.call(f'{settings.TELEGRAM_URL}{settings.TELEGRAM_TOKEN}/sendMessage',
+                params={
+                    'text':'Тема: Test subject \n\nСообщение: Test message',
+                    'chat_id': '747451276'
+                })
+        ]
+        mock_requests.assert_has_calls(expected_calls, any_order=True)
+
+
+
+
+
+
