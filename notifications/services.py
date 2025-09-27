@@ -1,11 +1,14 @@
+import os.path
+
 from django.core.mail import send_mail
 
 import requests
+from django.utils import timezone
 
 from smsaero import SmsAero, SmsAeroException
 
 from django.conf import settings
-from notifications.models import EmailSendStatus, TelegramSendStatus, SmsSendStatus
+from notifications.models import EmailSendStatus, TelegramSendStatus, SmsSendStatus, Notification
 
 from notifications.models import User
 
@@ -87,3 +90,91 @@ def send_sms_message(message: str) -> dict:
         except SmsAeroException as e:
             SmsSendStatus.objects.create(user=telegram_status.user, is_successful=False, error_message=e)
 
+
+def generate_notification_report():
+    '''
+    Генерирует текстовый отчет по всем отправкам
+    :return:
+    '''
+
+    timestamp = timezone.now().strftime('%d.%m.%Y %H:%M')
+    file_name = f'{timestamp}.txt'
+    file_path = os.path.join(settings.MEDIA_ROOT, 'reports', file_name)
+
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+    with open(file_path, 'w', encoding='utf-8') as f:
+        f.write('ОТЧЕТ ПО ОТПРАВКЕ УВЕДОМЛЕНИЙ\n')
+        f.write('=' * 50 + '\n\n')
+
+        # Статистика по Email
+        email_total = EmailSendStatus.objects.count()
+        email_success = EmailSendStatus.objects.filter(is_successful=True).count()
+        email_failed = email_total - email_success
+
+        f.write('ЭЛЕКТРОННАЯ ПОЧТА:\n')
+        f.write(f'\tВсего отправок: {email_total}\n')
+        f.write(f'\tУспешных: {email_success}\n')
+        f.write(f'\tНеудачных: {email_failed}\n')
+
+        # Статистика по Telegram
+        tg_total = TelegramSendStatus.objects.count()
+        tg_success = TelegramSendStatus.objects.filter(is_successful=True).count()
+        tg_failed = tg_total - tg_success
+
+        f.write('TELEGRAM:\n')
+        f.write(f'\tВсего отправок: {tg_total}\n')
+        f.write(f'\tУспешных: {tg_success}\n')
+        f.write(f'\tНеудачных: {tg_failed}\n')
+
+        # Статистика по SMS
+        sms_total = SmsSendStatus.objects.count()
+        sms_success = SmsSendStatus.objects.filter(is_successful=True).count()
+        sms_failed = sms_total - sms_success
+
+        f.write('SMS:\n')
+        f.write(f'\tВсего отправок: {sms_total}\n')
+        f.write(f'\tУспешных: {sms_success}\n')
+        f.write(f'\tНеудачных: {sms_failed}\n')
+
+        # Детали по неудачным отправкам
+        f.write('\nНЕУДАЧНЫЕ ОТПРАВКИ:\n')
+        f.write('-' * 30 + '\n')
+
+        failed_emails = EmailSendStatus.objects.filter(is_successful=False)
+        if failed_emails.exists():
+            f.write('Email:\n')
+            for attempt in failed_emails:
+                f.write(f'\tПользователь: {attempt.user.email}\n')
+                f.write(f'\tВремя: {attempt.sent_attempted}\n')
+                f.write(f'\tОшибка: {attempt.error_message}\n')
+                f.write(f'\t---\n')
+
+        failed_tg = TelegramSendStatus.objects.filter(is_successful=False)
+        if failed_tg.exists():
+            f.write('Telegram:\n')
+            for attempt in failed_tg:
+                f.write(f'\tПользователь: {attempt.user.email}\n')
+                f.write(f'\tВремя: {attempt.sent_attempted}\n')
+                f.write(f'\tОшибка: {attempt.error_message}\n')
+                f.write('\t---\n')
+
+        failed_sms = SmsSendStatus.objects.filter(is_successful=False)
+        if failed_sms.exists():
+            f.write('Sms:\n')
+            for attempt in failed_sms:
+                f.write(f'\tПользователь: {attempt.user.email}\n')
+                f.write(f'\tВремя: {attempt.sent_attempted}\n')
+                f.write(f'\tОшибка: {attempt.error_message}\n')
+                f.write('\t---\n')
+
+
+def delete_objects():
+    '''
+    Удаляет все объекты моделей User, Notification, EmailSendStatus, TelegramSendStatus, SmsSendStatus
+    '''
+    User.objects.all().delete()
+    Notification.objects.all().delete()
+    EmailSendStatus.objects.all().delete()
+    TelegramSendStatus.objects.all().delete()
+    SmsSendStatus.objects.all().delete()

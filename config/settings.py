@@ -140,3 +140,6 @@ SMSAERO_API_KEY = os.getenv('SMSAERO_API_KEY')
 # Настройки Telegram
 TELEGRAM_URL = 'https://api.telegram.org/bot'
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
+
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
