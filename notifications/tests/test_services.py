@@ -43,25 +43,6 @@ def users():
                                 tg_chat_id='747451276')
     return user1, user2
 
-@pytest.fixture
-def failed_email_statuses(users):
-    '''
-    Создает объекты, хранящие информацию о пользователях, которым не удалось отправить email-сообщение
-    '''
-
-    failed_email_statuse1 = EmailSendStatus.objects.create(user=users[0], is_successful=False)
-    failed_email_statuses2 = EmailSendStatus.objects.create(user=users[1], is_successful=False)
-
-
-@pytest.fixture
-def failed_telegram_statuses(users):
-    '''
-    Создает объекты, хранящие информацию о пользователях, которым не удалось отправить email-сообщение
-    '''
-
-    failed_telegram_statuse1 = TelegramSendStatus.objects.create(user=users[0], is_successful=False)
-    failed_telegram_statuses2 = TelegramSendStatus.objects.create(user=users[1], is_successful=False)
-
 
 class TestSendEmailMessage:
     '''
@@ -96,6 +77,15 @@ class TestSendEmailMessage:
 
 @pytest.mark.usefixtures('failed_email_statuses')
 class TestSendTelegramMessage:
+
+    @pytest.fixture
+    def failed_email_statuses(self, users):
+        '''
+        Создает объекты, хранящие информацию о пользователях, которым не удалось отправить email-сообщение
+        '''
+
+        failed_email_statuse1 = EmailSendStatus.objects.create(user=users[0], is_successful=False)
+        failed_email_statuses2 = EmailSendStatus.objects.create(user=users[1], is_successful=False)
 
     @pytest.fixture
     def mock_requests(self):
@@ -141,6 +131,15 @@ class TestSendSmsMessage:
     def mock_sms_aero(self):
         with patch('notifications.services.SmsAero') as mock_sms:
             yield mock_sms
+
+    @pytest.fixture
+    def failed_telegram_statuses(self, users):
+        '''
+        Создает объекты, хранящие информацию о пользователях, которым не удалось отправить email-сообщение
+        '''
+
+        failed_telegram_statuse1 = TelegramSendStatus.objects.create(user=users[0], is_successful=False)
+        failed_telegram_statuses2 = TelegramSendStatus.objects.create(user=users[1], is_successful=False)
 
     @pytest.mark.django_db
     def test_successful_sms_send(self, mock_sms_aero, failed_telegram_statuses):
