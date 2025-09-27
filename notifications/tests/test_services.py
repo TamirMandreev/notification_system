@@ -5,14 +5,12 @@ import pytest
 from unittest.mock import patch, MagicMock
 from django.conf import settings
 
-
 from notifications.services import create_users
 from notifications.models import User, EmailSendStatus, TelegramSendStatus
 from notifications.services import send_email_message, send_telegram_message, send_sms_message
 
-
-
 from django.core import mail
+
 
 @pytest.mark.django_db
 def test_create_users():
@@ -36,20 +34,39 @@ def test_create_users():
     assert timur_user.email == 'mandreevts@gmail.com'
     assert timur_user.number == '+79644111469'
 
+
 @pytest.fixture
 def users():
     user1 = User.objects.create(name='Tamir', email='tamirmandreev@mail.ru', number='+79915410704',
-                                 tg_chat_id='747451276')
+                                tg_chat_id='747451276')
     user2 = User.objects.create(name='Timur', email='mandreevts@gmail.com', number='+79644111469',
-                                 tg_chat_id='747451276')
+                                tg_chat_id='747451276')
     return user1, user2
+
+@pytest.fixture
+def failed_email_statuses(users):
+    '''
+    Создает объекты, хранящие информацию о пользователях, которым не удалось отправить email-сообщение
+    '''
+
+    failed_email_statuse1 = EmailSendStatus.objects.create(user=users[0], is_successful=False)
+    failed_email_statuses2 = EmailSendStatus.objects.create(user=users[1], is_successful=False)
+
+
+@pytest.fixture
+def failed_telegram_statuses(users):
+    '''
+    Создает объекты, хранящие информацию о пользователях, которым не удалось отправить email-сообщение
+    '''
+
+    failed_telegram_statuse1 = TelegramSendStatus.objects.create(user=users[0], is_successful=False)
+    failed_telegram_statuses2 = TelegramSendStatus.objects.create(user=users[1], is_successful=False)
 
 
 class TestSendEmailMessage:
     '''
     Тестирует функцию send_email_message
     '''
-
 
     @pytest.mark.django_db
     def test_send_email_message(self, users):
@@ -77,16 +94,8 @@ class TestSendEmailMessage:
             send_email_message('', '', [])
 
 
+@pytest.mark.usefixtures('failed_email_statuses')
 class TestSendTelegramMessage:
-
-    @pytest.fixture
-    def failed_email_statuses(self, users):
-        '''
-        Создает объекты, хранящие информацию о пользователях, которым не удалось отправить email-сообщение
-        '''
-
-        failed_email_statuse1= EmailSendStatus.objects.create(user=users[0], is_successful=False)
-        failed_email_statuses2= EmailSendStatus.objects.create(user=users[1], is_successful=False)
 
     @pytest.fixture
     def mock_requests(self):
@@ -113,29 +122,20 @@ class TestSendTelegramMessage:
             unittest.mock.call(
                 f'{settings.TELEGRAM_URL}{settings.TELEGRAM_TOKEN}/sendMessage',
                 params={
-                    'text':'Тема: Test subject \n\nСообщение: Test message',
+                    'text': 'Тема: Test subject \n\nСообщение: Test message',
                     'chat_id': '747451276'
                 }
             ),
             unittest.mock.call(f'{settings.TELEGRAM_URL}{settings.TELEGRAM_TOKEN}/sendMessage',
-                params={
-                    'text':'Тема: Test subject \n\nСообщение: Test message',
-                    'chat_id': '747451276'
-                })
+                               params={
+                                   'text': 'Тема: Test subject \n\nСообщение: Test message',
+                                   'chat_id': '747451276'
+                               })
         ]
         mock_requests.assert_has_calls(expected_calls, any_order=True)
 
 
 class TestSendSmsMessage:
-
-    @pytest.fixture
-    def failed_telegram_statuses(self, users):
-        '''
-        Создает объекты, хранящие информацию о пользователях, которым не удалось отправить email-сообщение
-        '''
-
-        failed_telegram_statuse1 = TelegramSendStatus.objects.create(user=users[0], is_successful=False)
-        failed_telegram_statuses2 = TelegramSendStatus.objects.create(user=users[1], is_successful=False)
 
     @pytest.fixture
     def mock_sms_aero(self):
@@ -161,13 +161,3 @@ class TestSendSmsMessage:
 
 def TestGenerateNotificationReport():
     pass
-
-
-
-
-
-
-
-
-
-
