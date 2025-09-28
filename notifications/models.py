@@ -16,10 +16,12 @@ class User(models.Model):
     def __str__(self):
         return self.email
 
+
 class EmailSendStatus(models.Model):
-    '''
+    """
     Хранит результаты отправки сообщений по электронной почте
-    '''
+    """
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     sent_attempted = models.DateTimeField(auto_now_add=True)
     is_successful = models.BooleanField(default=False)
@@ -27,20 +29,22 @@ class EmailSendStatus(models.Model):
 
 
 class TelegramSendStatus(models.Model):
-    '''
+    """
     Хранит результаты отправки сообщений в Telegram
-    '''
+    """
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     sent_attempted = models.DateTimeField(auto_now_add=True)
     is_successful = models.BooleanField(default=False)
     error_message = models.TextField(blank=True, null=True)
+
 
 class SmsSendStatus(models.Model):
-    '''
+    """
     Хранит результаты отправки смс-сообщений
-    '''
+    """
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     sent_attempted = models.DateTimeField(auto_now_add=True)
     is_successful = models.BooleanField(default=False)
     error_message = models.TextField(blank=True, null=True)
-

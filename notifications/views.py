@@ -1,7 +1,10 @@
 from rest_framework.generics import CreateAPIView
 
 from notifications.serializers import NotificationSerializer
-from notifications.services import create_users, send_sms_message, send_email_message, send_telegram_message, generate_notification_report, delete_objects
+from notifications.services import (create_users, delete_objects,
+                                    generate_notification_report,
+                                    send_email_message, send_sms_message,
+                                    send_telegram_message)
 
 
 class NotificationCreateAPIView(CreateAPIView):
@@ -11,11 +14,11 @@ class NotificationCreateAPIView(CreateAPIView):
         serializer.save()
 
         # Извлечь тему и текст сообщения
-        subject = serializer.validated_data['subject']
-        message = serializer.validated_data['message']
+        subject = serializer.validated_data["subject"]
+        message = serializer.validated_data["message"]
 
         # Создать пользователей
-        create_users(serializer.validated_data['users'])
+        create_users(serializer.validated_data["users"])
 
         # Отправить каждому пользователю письмо на эл. почту
         send_email_message(subject, message)
@@ -27,7 +30,3 @@ class NotificationCreateAPIView(CreateAPIView):
         generate_notification_report()
         # Удалить созданные объекты
         delete_objects()
-
-
-
-

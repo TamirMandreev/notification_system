@@ -6,5 +6,5 @@ from notifications.apps import NotificationsConfig
 app_name = NotificationsConfig.name
 
 urlpatterns = [
-    path('create/', views.NotificationCreateAPIView.as_view(), name="create"),
+    path("create/", views.NotificationCreateAPIView.as_view(), name="create"),
 ]

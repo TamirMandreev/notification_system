@@ -8,57 +8,114 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Notification',
+            name="Notification",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('users', models.JSONField()),
-                ('subject', models.CharField(max_length=255)),
-                ('message', models.TextField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("users", models.JSONField()),
+                ("subject", models.CharField(max_length=255)),
+                ("message", models.TextField()),
             ],
         ),
         migrations.CreateModel(
-            name='User',
+            name="User",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255)),
-                ('email', models.EmailField(max_length=254)),
-                ('number', models.CharField(max_length=255)),
-                ('tg_chat_id', models.CharField(blank=True, max_length=255, null=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=255)),
+                ("email", models.EmailField(max_length=254)),
+                ("number", models.CharField(max_length=255)),
+                ("tg_chat_id", models.CharField(blank=True, max_length=255, null=True)),
             ],
         ),
         migrations.CreateModel(
-            name='TelegramSendStatus',
+            name="TelegramSendStatus",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('sent_attempted', models.DateTimeField(auto_now_add=True)),
-                ('is_successful', models.BooleanField(default=False)),
-                ('error_message', models.TextField(blank=True, null=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='notifications.user')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("sent_attempted", models.DateTimeField(auto_now_add=True)),
+                ("is_successful", models.BooleanField(default=False)),
+                ("error_message", models.TextField(blank=True, null=True)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="notifications.user",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='SmsSendStatus',
+            name="SmsSendStatus",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('sent_attempted', models.DateTimeField(auto_now_add=True)),
-                ('is_successful', models.BooleanField(default=False)),
-                ('error_message', models.TextField(blank=True, null=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='notifications.user')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("sent_attempted", models.DateTimeField(auto_now_add=True)),
+                ("is_successful", models.BooleanField(default=False)),
+                ("error_message", models.TextField(blank=True, null=True)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="notifications.user",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='EmailSendStatus',
+            name="EmailSendStatus",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('sent_attempted', models.DateTimeField(auto_now_add=True)),
-                ('is_successful', models.BooleanField(default=False)),
-                ('error_message', models.TextField(blank=True, null=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='notifications.user')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("sent_attempted", models.DateTimeField(auto_now_add=True)),
+                ("is_successful", models.BooleanField(default=False)),
+                ("error_message", models.TextField(blank=True, null=True)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="notifications.user",
+                    ),
+                ),
             ],
         ),
     ]
