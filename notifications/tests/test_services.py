@@ -16,6 +16,10 @@ from django.core import mail
 
 @pytest.mark.django_db
 def test_create_users():
+    '''
+    Тестирует функцию create_users
+    :return:
+    '''
     data = [
         ['Тамир', 'tamirmandreev@mail.ru', '89915410704', '747451276'],
         ['Тимур', 'mandreevts@gmail.com', '+79644111469', '747451276'],
@@ -84,6 +88,9 @@ class TestSendEmailMessage:
 
 @pytest.mark.usefixtures('failed_email_statuses')
 class TestSendTelegramMessage:
+    '''
+    Тестирует функцию send_telegram_message
+    '''
 
     @pytest.fixture
     def failed_email_statuses(self, users):
@@ -103,9 +110,6 @@ class TestSendTelegramMessage:
     def test_successful_telegram_send(self, mock_requests, failed_email_statuses):
         '''
         Тест успешной отправки уведомления в Telegram
-        :param mock_requests:
-        :param emails_send_status_false:
-        :return:
         '''
 
         # Мок успешного ответа от Telegram API
@@ -133,6 +137,9 @@ class TestSendTelegramMessage:
 
 
 class TestSendSmsMessage:
+    '''
+    Тестирует функцию send_sms_message
+    '''
 
     @pytest.fixture
     def mock_sms_aero(self):
@@ -166,6 +173,9 @@ class TestSendSmsMessage:
 
 
 class TestGenerateNotificationReport:
+    '''
+    Тестирует функцию generate_notification_report
+    '''
 
     @pytest.fixture
     def objects(self, users):
